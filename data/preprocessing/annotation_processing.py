@@ -3,7 +3,7 @@ import numpy as np
 
 
 def load_annotations(filename, num_audios_per_shard=100, num_top=50):
-  """Reads annotation file, takes top N tags, and splits data samples.
+    """Reads annotation file, takes top N tags, and splits data samples.
   Results 54 (top50_tags + [clip_id, mp3_path, split, shard]) columns:
     ['choral', 'female voice', 'metal', 'country', 'weird', 'no voice',
      'cello', 'harp', 'beats', 'female vocal', 'male voice', 'dance',
@@ -32,51 +32,50 @@ def load_annotations(filename, num_audios_per_shard=100, num_top=50):
              1 (c) for validation, and 3 (d ~ f) for test.
       shard: A shard index of the audio.
   """
-  np.random.seed(0)
+    np.random.seed(0)
 
-  df = pd.read_csv(filename, delimiter='\t')
+    df = pd.read_csv(filename, delimiter="\t")
 
-  # Calculate TOP 50 tags.
-  top50 = (df.drop(['clip_id', 'mp3_path'], axis=1)
-    .sum()
-    .sort_values()
-    .tail(num_top)
-    .index
-    .tolist())
+    # Calculate TOP 50 tags.
+    top50 = (
+        df.drop(["clip_id", "mp3_path"], axis=1)
+        .sum()
+        .sort_values()
+        .tail(num_top)
+        .index.tolist()
+    )
 
-  # Select TOP 50 columns.
-  df = df[top50 + ['clip_id', 'mp3_path']]
+    # Select TOP 50 columns.
+    df = df[top50 + ["clip_id", "mp3_path"]]
 
-  # Select rows which has at least one label.
-  df = df.loc[df.iloc[:, :num_top].any(axis=1)]
+    # Select rows which has at least one label.
+    df = df.loc[df.iloc[:, :num_top].any(axis=1)]
 
-  def split_by_directory(mp3_path):
-    directory = mp3_path.split('/')[0]
-    part = int(directory, 16)
+    def split_by_directory(mp3_path):
+        directory = mp3_path.split("/")[0]
+        part = int(directory, 16)
 
-    if part in range(12):
-      return 'train'
-    elif part is 12:
-      return 'val'
-    elif part in range(13, 16):
-      return 'test'
+        if part in range(12):
+            return "train"
+        elif part is 12:
+            return "val"
+        elif part in range(13, 16):
+            return "test"
 
-  # Split by directories.
-  df['split'] = df['mp3_path'].apply(
-    lambda mp3_path: split_by_directory(mp3_path))
+    # Split by directories.
+    df["split"] = df["mp3_path"].apply(lambda mp3_path: split_by_directory(mp3_path))
 
-  for split in ['train', 'val', 'test']:
-    num_audios = sum(df['split'] == split)
-    num_shards = num_audios // num_audios_per_shard
-    num_remainders = num_audios % num_audios_per_shard
+    for split in ["train", "val", "test"]:
+        num_audios = sum(df["split"] == split)
+        num_shards = num_audios // num_audios_per_shard
+        num_remainders = num_audios % num_audios_per_shard
 
-    shards = np.tile(np.arange(num_shards), num_audios_per_shard)
-    shards = np.concatenate([shards, np.arange(num_remainders) % num_shards])
-    shards = np.random.permutation(shards)
+        shards = np.tile(np.arange(num_shards), num_audios_per_shard)
+        shards = np.concatenate([shards, np.arange(num_remainders) % num_shards])
+        shards = np.random.permutation(shards)
 
-    df.loc[df['split'] == split, 'shard'] = shards
+        df.loc[df["split"] == split, "shard"] = shards
 
-  df['shard'] = df['shard'].astype(int)
+    df["shard"] = df["shard"].astype(int)
 
-  return df
-
+    return df
