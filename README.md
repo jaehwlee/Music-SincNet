@@ -21,7 +21,6 @@ Results
 ![image](https://user-images.githubusercontent.com/33409264/103455148-bf1abe00-4d2d-11eb-9f05-c4a19458e579.png)
 
 * 원시 음원 파형을 입력으로 한 모델 중 가장 높은 성능을 보임
-* 추가적인 전처리를 수행한 Harmonic CNN보다는 낮은 성능을 보임
 
 Analysis
 --
